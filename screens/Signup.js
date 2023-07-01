@@ -69,10 +69,10 @@ export default Signup = ({navigation}) => {
   const SignupSchema = Yup.object().shape({
     username: Yup.string()
       .max(50, "Too Long!")
-      .test("used-username", "Username is in use", async () => {
-        return !(await firestore().collection("users").doc(username).get())
-          .exists;
-      })
+      // .test("used-username", "Username is in use", async () => {
+      //   return !(await firestore().collection("users").doc(username).get())
+      //     .exists;
+      // })
       .required("Required"),
     email: Yup.string()
       .email("must be a valid email")

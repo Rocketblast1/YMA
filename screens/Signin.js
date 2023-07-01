@@ -26,7 +26,6 @@ export default Signin = ({ navigation }) => {
     setUser(user);
     if (initializing) setInitializing(false);
   }
-awwaAzzzzwgggtttttttttttxddffszass
   const signOut = () => {
     auth().signOut();
   };

@@ -2,10 +2,10 @@ import React, { useState, useEffect, useRef, useContext } from "react";
 import { Button, StyleSheet, View, ImageBackground, Text, } from "react-native";
 import storage from '@react-native-firebase/storage';
 import firestore from '@react-native-firebase/firestore';
-import { TrackContext,  } from "../component/trackContext";
+import { TrackContext } from "../contexts/TrackContext";
 import useQueue from "../hooks/useQueue";
-import SongLst from "../component/SongLst";
-import PlayerControls from "../component/PlayerControls";
+import SongLst from "../components/SongLst";
+import PlayerControls from "../components/PlayerControls";
 
 export default MusicScreen = ({ navigation }) => {
     const [queuedSongs, updateTrackQueue] = useQueue()
@@ -64,7 +64,7 @@ export default MusicScreen = ({ navigation }) => {
                 {queuedSongs ? (<SongLst songs={queuedSongs} update={updateTrackQueue} />) : (<></>)}
             </View>
             <Text>
-                {JSON.stringify(currentTrack)}
+                {/* {JSON.stringify(currentTrack)} */}
             </Text>
             <PlayerControls Player={Player} />
             <Button title="Browse Music" onPress={() => {

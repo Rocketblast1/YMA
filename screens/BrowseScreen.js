@@ -7,10 +7,10 @@ import {
     Dimensions,
     Button,
 } from "react-native";
-import Card from "../component/card";
+import Card from "../components/card";
 import storage from '@react-native-firebase/storage';
 import firestore from '@react-native-firebase/firestore';
-import { TrackContext } from "../component/trackContext";
+import { TrackContext } from "../contexts/TrackContext";
 import FoundationIcon from "react-native-vector-icons/Foundation";
 import IonIcon from "react-native-vector-icons/Ionicons";
 
@@ -79,10 +79,10 @@ export default function BrowseScreen({ route }) {
         <FlatList
             data={songs}
             renderItem={({ item, index }) => (
-            
-                    <Card title={item.title} artwork={item.artwork} onPress={async () => {
-                        handleAddSong(item.title, item.filename, item.artwork)
-                    }}/> 
+
+                <Card title={item.title} artwork={item.artwork} onPress={async () => {
+                    handleAddSong(item.title, item.filename, item.artwork)
+                }} />
             )}
         />
         // <ScrollView

@@ -22,6 +22,7 @@ const config = {
 
 export default MusicStack = () => {
   return (
+    
     <Stack.Navigator
       screenOptions={{
         headerShown: false,

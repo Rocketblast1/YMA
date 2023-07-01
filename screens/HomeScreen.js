@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   View,
@@ -8,43 +8,62 @@ import {
   TouchableOpacity,
   Dimensions,
 } from "react-native";
+import firestore from '@react-native-firebase/firestore';
 import Card from "../components/card";
 // import Videos from "./videos";
 
-export default function HomeScreen() {
-  const [cards, setCards] = useState([
-    {
-      title: "Boom Box Bois",
-      intro: "These bois just cant get enough of their anime",
-      uri: require("../assets/gg.png"),
-      key: "1",
-    },
-    {
-      title: "Girl Problems",
-      intro: "Why the bois need boi days",
-      // uri: require("../assets/GreenhouseGaming.jpg"),
-      key: "2",
-    },
-    {
-      title: "Yung Men Lifestyle",
-      intro: "Take an inside look at the Yung Men",
-      uri: require("../assets/gg.png"),
-      key: "3",
-    },
-  ]);
+export default function HomeScreen({ navigation }) {
+  const [initializing, setInitializing] = useState(true)
+  useEffect(() => {
+    const subscriber = firestore()
+      .collection('Home')
+      .onSnapshot((querySnapshot) => {
+        try {
+          querySnapshot.forEach(documentSnapshot => {
+            cards.push({
+              ...documentSnapshot.data(),
+              key: documentSnapshot.id,
+            })
 
+          });
+        } catch (e) {
+          console.log(e)
+        } finally {
+          setInitializing(false)
+        }
+      });
+    return () => {
+      subscriber();
+    }
+
+  }, [])
+
+  const [cards, setCards] = useState([]);
+
+  const handleClick = (item) => {
+    if (item.type == "VIDEO") {
+      navigation.navigate("Videos", { filename: item.filename })
+      return
+    }
+    navigation.navigate("Music", { filename: item.filename })
+  }
 
   return (
-    <FlatList
-      style={styles.scrollList}
-      contentContainerStyle={styles.cc}
-      data={cards}
-      renderItem={({ item }) => (
-        <View style={styles.tc}>
-          <Card title={item.title} intro={item.intro} />
-        </View>
-      )}
-    />
+    <>
+      <FlatList
+        style={styles.scrollList}
+        contentContainerStyle={styles.cc}
+        data={cards}
+        renderItem={({ item }) => (
+          <View style={styles.tc}>
+            <Card title={item.title} intro={item.intro} artwork={item.artwork} onPress={() => {
+              handleClick(item)
+            }} />
+          </View>
+        )}
+      />
+    </>
+
   );
 }
 const styles = StyleSheet.create({
@@ -81,7 +100,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     height: Dimensions.get("screen").height / 22.2,
     width: Dimensions.get("screen").height / 22.2,
-    borderRadius: Dimensions.get("screen").height / 20/ 6,
+    borderRadius: Dimensions.get("screen").height / 20 / 6,
   },
   songCenter: {
     flex: 1,

@@ -1,13 +1,24 @@
 import { NavigationContainer } from '@react-navigation/native';
 import React, { useState, useEffect, useRef, useContext } from "react";
-import { useWindowDimensions, View, Text } from 'react-native';
+import { useWindowDimensions, useScreenDimensions, View, Text, StatusBar, } from 'react-native';
 import { useDimensions, useDeviceOrientation } from "@react-native-community/hooks";
 import { createDrawerNavigator } from "@react-navigation/drawer";
-import HomeStack from './stacks/HomeStack';
+import { TrackContext } from "./contexts/TrackContext";
+
+//Firebase
+import auth from "@react-native-firebase/auth";
 
 //Screens
+import Nav from "./components/Nav";
 import Menu from "./components/menu";
 import Profile from "./components/Profile";
+import Videos from "./screens/Videos";
+
+//Stacks
+import HomeStack from "./stacks/HomeStack";
+import LOGIN_SIGNUP_STACK from "./stacks/ProfileStack";
+import MusicStack from "./stacks/MusicStack";
+
 
 const R = () => (
   <View>
@@ -25,15 +36,73 @@ export default App = () => {
   const muicPlayerIsSetup = useRef(false)
   const [fullscreen, setFullscreen] = useState();
   const orientation = useDeviceOrientation();
-  useEffect(() => {
-    
-    return () => {
-      
+  const handleFullscreen = async () => {
+    if (orientation.landscape === true) {
+      setFullscreen(true)
+      StatusBar.setHidden(true)
     }
-  }, [])
-  
+    if (orientation.portrait === true) {
+      setFullscreen(false)
+    }
+  }
+
+  const isSetup = useRef(false)
+  const Player = useContext(TrackContext)
+  const setUpTrackPlayer = async () => {
+    try {
+      await Player.setupPlayer().then(() => {
+        isSetup.current = true;
+        setInitializing(false)
+      });
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  // Setting up track player on component load
+  useEffect(() => {
+    if (!isSetup.current) {
+      setUpTrackPlayer();
+    }
+    setInitializing(false)
+    return () => {
+      isSetup.current = false
+      Player.destroy()
+    }
+  }, [isSetup])
+
+  // Handling authentication for user
+  useEffect(() => {
+    const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
+    handleFullscreen();
+    return () => {
+      subscriber(); // unsubscribe on unmount
+    }
+  }, [orientation]);
+
+  function onAuthStateChanged(user) {
+    setUser(user);
+    if (initializing) setInitializing(false);
+  }
+
+  // //Loading Screen
+  if (initializing) return <></>;
+
+  // //Login Navigator
+  if (!user)
+    return (
+      <NavigationContainer style={{}}>
+        <LOGIN_SIGNUP_STACK />
+      </NavigationContainer>
+    );
+
+
   return (
     <NavigationContainer style={{ flex: 1, height: height, width: width }} >
+      <StatusBar
+        animated={true}
+        backgroundColor={"#53e639"}
+      />
       <Drawer.Navigator
         screenOptions={({ navigation }) => ({
           headerShown: !fullscreen,
@@ -60,14 +129,16 @@ export default App = () => {
           headerLeft: () => <Menu navigation={navigation} />,
           headerTitle: () => <Nav navigation={navigation} />,
           headerRight: () => (
-            <Profile navigation={navigation} auth={auth} />
+            <Profile navigation={navigation}
+            // auth={auth}
+            />
           ),
         })}
         headerMode="screen"
       >
         <Drawer.Screen name="Home" component={HomeStack} />
-        {/* <Drawer.Screen name="Music" component={MusicStack} /> */}
-        {/* <Drawer.Screen name="Videos" component={Videos} initialParams={{ fullscreen: fullscreen }} /> */}
+        <Drawer.Screen name="Music" component={MusicStack} />
+        <Drawer.Screen name="Videos" component={Videos} initialParams={{ fullscreen: fullscreen }} />
         {/* <Drawer.Screen name="Profile" component={ProfileStack} /> */}
       </Drawer.Navigator>
     </NavigationContainer>

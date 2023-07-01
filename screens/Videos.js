@@ -13,7 +13,6 @@ import {
 import Video from "react-native-video";
 import Slider from '@react-native-community/slider';
 import Icon from "react-native-vector-icons/Ionicons";
-import SystemNavigationBar from "react-native-system-navigation-bar";
 import { useDimensions, useDeviceOrientation } from "@react-native-community/hooks";
 import {
   // Orientation,
@@ -27,7 +26,8 @@ import { LogBox } from "react-native";
 // 2) Build video player UI [] (Get time of playback and build seekbar)
 
 export default Videos = ({ route }) => {
-  const video = require("../Its-A-Show-4.mp4");
+  const video = require("../assets/Its-A-Show-4.mp4");
+  const [video, setvideo] = useState(second)
   const height = Dimensions.get("screen").height;
   const width = Dimensions.get("screen").width;
   const [paused, setPaused] = useState(false);
