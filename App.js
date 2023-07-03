@@ -10,9 +10,9 @@ import auth from "@react-native-firebase/auth";
 
 //Screens
 import Nav from "./components/Nav";
-import Menu from "./components/menu";
+import Menu from "./components/Menu";
 import Profile from "./components/Profile";
-import Videos from "./screens/Videos";
+import VideoScreen from "./screens/VideoScreen";
 
 //Stacks
 import HomeStack from "./stacks/HomeStack";
@@ -37,12 +37,13 @@ export default App = () => {
   const [fullscreen, setFullscreen] = useState();
   const orientation = useDeviceOrientation();
   const handleFullscreen = async () => {
-    if (orientation.landscape === true) {
+    if (orientation == "landscape") {
       setFullscreen(true)
       StatusBar.setHidden(true)
     }
-    if (orientation.portrait === true) {
+    if (orientation == "portrait") {
       setFullscreen(false)
+      StatusBar.setHidden(false)
     }
   }
 
@@ -138,7 +139,7 @@ export default App = () => {
       >
         <Drawer.Screen name="Home" component={HomeStack} />
         <Drawer.Screen name="Music" component={MusicStack} />
-        <Drawer.Screen name="Videos" component={Videos} initialParams={{ fullscreen: fullscreen }} />
+        <Drawer.Screen name="Videos" component={VideoScreen} initialParams={{ fullscreen: fullscreen }} />
         {/* <Drawer.Screen name="Profile" component={ProfileStack} /> */}
       </Drawer.Navigator>
     </NavigationContainer>

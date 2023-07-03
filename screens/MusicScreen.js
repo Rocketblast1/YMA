@@ -9,29 +9,28 @@ import PlayerControls from "../components/PlayerControls";
 
 export default MusicScreen = ({ navigation }) => {
     const [queuedSongs, updateTrackQueue] = useQueue()
-    // const [initializing, setInitializing] = useState(true)
-    // const isSetup = useRef(false)
+    const [initializing, setInitializing] = useState(true)
+    const isSetup = useRef(false)
     const Player = useContext(TrackContext)
-    // const setUpTrackPlayer = async () => {
-    //     try {
-    //         await Player.setupPlayer().then(() => {
-    //             isSetup.current = true;
-    //             setInitializing(false)
-    //         });
-    //     } catch (e) {
-    //         console.log(e)
-    //     }
-    // }
+    const setUpTrackPlayer = async () => {
+        try {
+            await Player.setupPlayer().then(() => {
+                isSetup.current = true;
+                setInitializing(false)
+            });
+        } catch (e) {
+            console.log(e)
+        }
+    }
 
     useEffect(() => {
-        // if (!isSetup.current) {
-        //     setUpTrackPlayer();
-        // }
-        // setInitializing(false)
-        // console.log(currentTrack);
+        if (!isSetup.current) {
+            setUpTrackPlayer();
+        }
+        setInitializing(false)
         return () => {
-            // isSetup.current = false
-            // Player.destroy()
+            isSetup.current = false
+            Player.destroy()
         }
     }, [
         // currentTrack
@@ -42,13 +41,6 @@ export default MusicScreen = ({ navigation }) => {
     //     </View>)
     // }
 
-    const RefreshImgBg = (props) => {
-        return(
-            <ImageBackground >
-                {props.children}
-            </ImageBackground>
-        )
-    }
 
     return (
         <ImageBackground

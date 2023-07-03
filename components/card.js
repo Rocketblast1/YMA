@@ -10,13 +10,12 @@ import {
   Button,
 } from "react-native";
 import storage from '@react-native-firebase/storage';
-export default function card({ title, intro, source, artwork, onPress }) {
-  const window = Dimensions.get("screen");
+export default function Card({ title, intro, source, artwork, onPress }) {
   const [initializing, setInitializing] = useState(true);
-  const [url, setUrl] = useState({uri:""});
+  const [url, setUrl] = useState({uri:""}); // TODO: Change this to the loading asset
   useEffect(() => {
     if (artwork) {
-      let art = {uri: "" }
+      let art = {uri: null }
       try {
         storage().ref(artwork)
         .getDownloadURL()
@@ -27,7 +26,6 @@ export default function card({ title, intro, source, artwork, onPress }) {
       } catch (e) {
         console.log(e)
       } finally {
-        console.log(url)
         setInitializing(false)
       }
     } else {
@@ -53,10 +51,7 @@ export default function card({ title, intro, source, artwork, onPress }) {
       >
         <View style={styles.content}></View>
         <View
-          // colors={["rgba(0, 0, 0, 0.01)", "rgba(0, 0, 0, 0.30)"]}
           style={styles.gradient}
-        // start={[0.8, 0.3]}
-        // end={[0.46, 1.9]}
         >
           <Text style={styles.title}> {title} </Text>
           <Text style={styles.intro}> {intro} </Text>

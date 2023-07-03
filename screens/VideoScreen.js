@@ -9,6 +9,7 @@ import {
   Dimensions,
   Button,
   Modal,
+  LogBox
 } from "react-native";
 import Video from "react-native-video";
 import Slider from '@react-native-community/slider';
@@ -19,15 +20,14 @@ import {
   PORTRAIT,
   LANDSCAPE,
 } from "react-native-orientation-locker";
-import Orientation from "react-native-orientation-locker";
-import { LogBox } from "react-native";
+import VideoDescription from "../components/VideoDescription";
+import VideoComments from "../components/VideoComments";
 
 // ------------------------T-------------TO DO---------------------------------------------------:
 // 2) Build video player UI [] (Get time of playback and build seekbar)
 
-export default Videos = ({ route }) => {
-  const video = require("../assets/Its-A-Show-4.mp4");
-  const [video, setvideo] = useState(second)
+export default VideoScreen = ({ route }) => {
+  const [video, setVideo] = useState(route.params.filename ? { uri: route.params.filename } : require("../assets/Its-A-Show-4.mp4"))
   const height = Dimensions.get("screen").height;
   const width = Dimensions.get("screen").width;
   const [paused, setPaused] = useState(false);
@@ -36,15 +36,17 @@ export default Videos = ({ route }) => {
   const [fullscreen, setFullscreen] = useState()
   const [controlsVisible, setControlsVisible] = useState(false)
   const [initializing, setInitializing] = useState(true)
-  const iconSize = Dimensions.get("screen").height / 20
+  const [iconSize, setIconSize] = useState(height / 22)
   const orientation = useDeviceOrientation();
   const handleFullscreen = async () => {
-    if (orientation.landscape === true) {
+    if (orientation == "landscape") {
       setFullscreen(true)
+      setIconSize(width / 8)
       StatusBar.setHidden(true)
     }
-    if (orientation.portrait === true) {
+    if (orientation == "portrait") {
       setFullscreen(false)
+      setIconSize(height / 22)
       StatusBar.setHidden(false)
     }
   }
@@ -59,8 +61,11 @@ export default Videos = ({ route }) => {
   useEffect(() => {
     LogBox.ignoreLogs(["Animated: `useNativeDriver`"]);
     load();
+    if (route.params.filename) {
+      setVideo({ uri: route.params.filename })
+    }
     handleFullscreen();
-  }, [orientation]);
+  }, [orientation, route.params.filename]);
 
 
   const handlePlay = () => {
@@ -86,6 +91,7 @@ export default Videos = ({ route }) => {
             position: fullscreen ? "absolute" : "relative",
             height: fullscreen ? height : height / 3,
             width: "100%",
+            zIndex: 1000,
           }}
         >
           <TouchableOpacity style={{
@@ -113,29 +119,18 @@ export default Videos = ({ route }) => {
                 bufferForPlaybackMs: 2500,
                 bufferForPlaybackAfterRebufferMs: 5000,
               }}
+              onBuffer={(bufferObj) => {
+                setPaused(true)
+                console.log(bufferObj);
+              }}
               source={video}
               paused={paused}
               fullscreenOrientation="landscape"
               resizeMode={fullscreen ? "cover" : "contain"}
               style={styles.backgroundVideo}
             />
-            {controlsVisible ? <View style={{
-              position: "absolute",
-              flex: 1,
-              width: "100%",
-              height: "100%",
-              justifyContent: 'center',
-              alignSelf: "center",
-            }}>
-              <View style={{
-                position: "absolute",
-                flex: 1,
-                flexDirection: 'row',
-                width: "60%",
-                height: "30%",
-                justifyContent: 'center',
-                alignSelf: "center",
-              }} >
+            {controlsVisible ? <View style={styles.invisibleContainer}>
+              <View style={styles.videoControls} >
                 <TouchableOpacity style={styles.ivb} onPress={() => {
                   handleShowControls();
                   handleBackward10();
@@ -156,7 +151,7 @@ export default Videos = ({ route }) => {
                 </TouchableOpacity>
               </View>
               <Slider
-                style={{ position: "absolute", bottom: "3%", width: "100%", height: 40 }}
+                style={styles.slider}
                 minimumValue={0}
                 maximumValue={vidPlayer.seekableDuration}
                 value={vidPlayer.currentTime}
@@ -178,9 +173,17 @@ export default Videos = ({ route }) => {
             </View> : <></>}
           </TouchableOpacity>
         </View>
+        <VideoDescription title={route.params.title} description={route.params.description} />
+        <VideoComments comments={route.params.comments} />
         <View style={{ flex: 2 }}>
           {initializing ? <Text>{toString(paused)}</Text> : <></>}
+
+          {/* 
+          <Text> {JSON.stringify(fullscreen)}</Text>
+          <Text> {JSON.stringify(orientation)}</Text>
           <Text> {JSON.stringify(vidPlayer)}</Text>
+          <Text> {JSON.stringify(route.params)}</Text> 
+          */}
         </View>
       </View>}
     </>
@@ -197,9 +200,34 @@ const styles = StyleSheet.create({
   button: {},
   ivb: {
     position: "relative",
-    padding: '5%',
-    marginHorizontal: '5%',
-    alignSelf: "center"
+    // padding: '5%',
+    // marginHorizontal: '5%',
+    alignSelf: "center",
+    zIndex: 1001,
+  },
+  invisibleContainer: {
+    position: "absolute",
+    flex: 1,
+    width: "100%",
+    height: "100%",
+    justifyContent: 'center',
+    alignSelf: "center",
+  },
+  slider: {
+    position: "absolute",
+    bottom: "3%",
+    width: "100%",
+    height: 40,
+  },
+  videoControls: {
+    position: "absolute",
+    flex: 1,
+    flexDirection: 'row',
+    width: "70%",
+    height: "30%",
+    justifyContent: 'space-evenly',
+    alignSelf: "center",
+    zIndex: 1001,
   },
   backgroundVideo: {
     display: "flex",

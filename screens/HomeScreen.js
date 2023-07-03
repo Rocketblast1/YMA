@@ -9,11 +9,14 @@ import {
   Dimensions,
 } from "react-native";
 import firestore from '@react-native-firebase/firestore';
-import Card from "../components/card";
+import storage from '@react-native-firebase/storage';
+import Card from "../components/Card";
 // import Videos from "./videos";
 
 export default function HomeScreen({ navigation }) {
   const [initializing, setInitializing] = useState(true)
+  const [cards, setCards] = useState([]);
+
   useEffect(() => {
     const subscriber = firestore()
       .collection('Home')
@@ -38,14 +41,23 @@ export default function HomeScreen({ navigation }) {
 
   }, [])
 
-  const [cards, setCards] = useState([]);
 
-  const handleClick = (item) => {
+  const handleClick = async (item) => {
+    let storageFilename = ""
+    await storage().ref(item.filename).getDownloadURL().then((url) => {
+      storageFilename = url
+    })
     if (item.type == "VIDEO") {
-      navigation.navigate("Videos", { filename: item.filename })
+      let res;
+      try {
+        res = await firestore().collection("Videos").doc(item.title).get()
+      } catch (error) {
+        return console.log("Could navigate to video:" + error)
+      }
+      navigation.navigate("Videos", { ...res.data(), filename: storageFilename, title: item.title, })
       return
     }
-    navigation.navigate("Music", { filename: item.filename })
+    navigation.navigate("Music", { filename: storageFilename })
   }
 
   return (

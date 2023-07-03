@@ -7,7 +7,7 @@ import {
     Dimensions,
     Button,
 } from "react-native";
-import Card from "../components/card";
+import Card from "../components/Card";
 import storage from '@react-native-firebase/storage';
 import firestore from '@react-native-firebase/firestore';
 import { TrackContext } from "../contexts/TrackContext";
@@ -54,12 +54,11 @@ export default function BrowseScreen({ route }) {
             id: new Date().valueOf(),
             url: "",
             title: title,
-            artwork: { uri: "" }
+            artwork: { uri: null }
         }
         try {
             await storage().ref(filename).getDownloadURL().then((url) => {
                 song.url = url
-
             })
             await storage().ref(artwork).getDownloadURL().then((url) => {
                 song.artwork.uri = url
