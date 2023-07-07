@@ -8,12 +8,12 @@ import {
   Button,
   Keyboard,
 } from "react-native";
-import auth from "@react-native-firebase/auth";
+import auth, { firebase } from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
 import { Formik } from "formik";
 import * as Yup from "yup";
 
-export default Signup = ({navigation}) => {
+export default Signup = ({ navigation }) => {
   const [initializing, setInitializing] = useState(true);
   const [user, setUser] = useState();
   const [username, setUsername] = useState("");
@@ -38,8 +38,11 @@ export default Signup = ({navigation}) => {
   const loginEmailPassword = (email, password) => {
     auth()
       .createUserWithEmailAndPassword(email, password)
-      .then(() => {
+      .then((user) => {
         auth().signInWithEmailAndPassword(email, password);
+        user.user.updateProfile({
+          displayName: username,
+        });
         console.log("User account created & signed in!");
       })
       .catch((error) => {
@@ -60,6 +63,7 @@ export default Signup = ({navigation}) => {
       email: email,
       firstTimeLogin: true,
     });
+    
   };
 
   const oneCapitalExp = RegExp(/(?=.*[A-Z])[A-Za-z\d@$!%*#?&\_\|\\]{8,}$/g);
@@ -108,9 +112,9 @@ export default Signup = ({navigation}) => {
           confirmPass: "",
         }}
         validationSchema={SignupSchema}
-        onSubmit={(values) => {
+        onSubmit={async (values) => {
           loginEmailPassword(values.email, values.password);
-          makeFsUser(values.username, values.email);
+          await makeFsUser(values.username, values.email)
           auth().onAuthStateChanged(onAuthStateChanged);
         }}
       >
@@ -184,7 +188,7 @@ export default Signup = ({navigation}) => {
                 <Button
                   style={styles.signupButton}
                   title={"Submit"}
-                  disabled={!isValid || !dirty }
+                  disabled={!isValid || !dirty}
                   onPress={handleSubmit}
                 />
               </View>
@@ -206,7 +210,7 @@ export default Signup = ({navigation}) => {
     );
   }
 
-//Screen to show when the user is logged in
+  //Screen to show when the user is logged in
   return (
     <View style={styles.container}>
       <Text> Welcome {user.email} </Text>
@@ -242,7 +246,7 @@ const styles = {
   buttonContainer: {
     marginTop: 10,
   },
-  profileText:{
+  profileText: {
     marginTop: 10,
     alignSelf: 'center',
   },

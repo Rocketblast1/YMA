@@ -22,6 +22,8 @@ import {
 } from "react-native-orientation-locker";
 import VideoDescription from "../components/VideoDescription";
 import VideoComments from "../components/VideoComments";
+import AddComment from "../components/AddComment";
+import auth from "@react-native-firebase/auth";
 
 // ------------------------T-------------TO DO---------------------------------------------------:
 // 2) Build video player UI [] (Get time of playback and build seekbar)
@@ -84,18 +86,19 @@ export default VideoScreen = ({ route }) => {
 
   return (
     <>
-      {initializing ? <></> : <View style={styles.container}>
+      {initializing ? <></> : <View style={styles.screenContainer}>
         <View
           style={{
             flex: 1,
             position: fullscreen ? "absolute" : "relative",
-            height: fullscreen ? height : height / 3,
+            height: fullscreen ? height : height / 2,
             width: "100%",
             zIndex: 1000,
           }}
         >
           <TouchableOpacity style={{
             flex: 1,
+            position: "relative",
             backgroundColor: "green",
             justifyContent: 'center',
           }}
@@ -173,6 +176,7 @@ export default VideoScreen = ({ route }) => {
             </View> : <></>}
           </TouchableOpacity>
         </View>
+        <AddComment title={route.params.title}/>
         <VideoDescription title={route.params.title} description={route.params.description} />
         <VideoComments comments={route.params.comments} />
         <View style={{ flex: 2 }}>
@@ -192,7 +196,7 @@ export default VideoScreen = ({ route }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
+  screenContainer: {
     flex: 1,
     backgroundColor: "orange",
     justifyContent: "center",

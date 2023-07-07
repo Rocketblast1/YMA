@@ -12,17 +12,17 @@ import {
 import storage from '@react-native-firebase/storage';
 export default function Card({ title, intro, source, artwork, onPress }) {
   const [initializing, setInitializing] = useState(true);
-  const [url, setUrl] = useState({uri:""}); // TODO: Change this to the loading asset
+  const [url, setUrl] = useState({ uri: "" }); // TODO: Change this to the loading asset
   useEffect(() => {
     if (artwork) {
-      let art = {uri: null }
+      let art = { uri: null }
       try {
         storage().ref(artwork)
-        .getDownloadURL()
-        .then((url) => {
-          art.uri = url
-          setUrl(art)
-        })
+          .getDownloadURL()
+          .then((url) => {
+            art.uri = url
+            setUrl(art)
+          })
       } catch (e) {
         console.log(e)
       } finally {
@@ -31,7 +31,7 @@ export default function Card({ title, intro, source, artwork, onPress }) {
     } else {
       setInitializing(false)
     }
-    
+
   }, []);
 
 
@@ -44,46 +44,44 @@ export default function Card({ title, intro, source, artwork, onPress }) {
   }
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
-      <ImageBackground
-        style={styles.imageBackground}
-        ImageResizeMode={"cover"}
-        source={url}
-      >
-        <View style={styles.content}></View>
-        <View
-          style={styles.gradient}
+      {/* <View style={{display: "flex", flex: 1,}}>
+     
+        <ImageBackground
+          style={styles.imageBackground}
+          ImageResizeMode={"cover"}
+          source={url}
         >
-          <Text style={styles.title}> {title} </Text>
-          <Text style={styles.intro}> {intro} </Text>
-        </View>
-      </ImageBackground>
+
+        </ImageBackground>
+      </View> */}
+      <Image
+        source={url}
+        style={{ display: "flex", flex: 1, width: "100%", height: "100%", borderRadius: 10, }}
+        resizeMode={"cover"}
+      />
+      <Text style={styles.title}> {title} </Text>      
     </TouchableOpacity>
   );
 }
 const styles = StyleSheet.create({
   container: {
-    position: "relative",
-    top: "0%",
+    // position: "relative",
+    display: "flex",
+    flexDirection: "column",
+    flex: 1,
     width: "100%",
-    height: Dimensions.get("screen").height / 4,
+    height: Dimensions.get("screen").height / 3,
     backgroundColor: "#53e639",
     borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
     opacity: 1,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 10,
-    },
-    shadowOpacity: 1,
-    shadowRadius: 4,
-    elevation: 10,
   },
   imageBackground: {
+    display: "flex",
     width: "100%",
     height: "100%",
-    transform: [{ translateX: 2.5 }, { translateY: 2.5 }],
+    // transform: [{ translateX: 2.5 }, { translateY: 2.5 }],
     borderRadius: 10,
     overflow: "hidden",
   },
@@ -93,20 +91,23 @@ const styles = StyleSheet.create({
     height: "100%",
     transform: [{ translateX: 2.5 }, { translateY: 2.5 }],
     backgroundColor: "#f2f2f2",
-    opacity: 0.09,
+    opacity: 0.002,
     borderRadius: 10,
   },
   title: {
-    position: "absolute",
+    position: "relative",
+    marginBottom: "2%",
+    marginTop: "1%",
+    display: "flex",
+    flex: 0.2,
     textAlignVertical: "center",
-    width: "90%",
-    height: "50%",
+    width: "100%",
+    height: "100%",
     color: "#67ff4d",
     fontSize: 30,
     opacity: 1,
-    left: "0%",
     fontWeight: "bold",
-    top: "0%",
+    zIndex: 10,
   },
   intro: {
     position: "absolute",

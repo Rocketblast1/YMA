@@ -59,7 +59,8 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
         opacity: 1,
-        margin: "1%",  
+        marginTop: "1%",
+
         shadowColor: "#000",
         shadowOffset: {
             width: 0,
@@ -67,7 +68,6 @@ const styles = StyleSheet.create({
         },
         shadowOpacity: 1,
         shadowRadius: 4,
-        elevation: 10,
     },
     content: {
         position: "relative",

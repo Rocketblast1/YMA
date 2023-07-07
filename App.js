@@ -20,6 +20,7 @@ import LOGIN_SIGNUP_STACK from "./stacks/ProfileStack";
 import MusicStack from "./stacks/MusicStack";
 
 
+
 const R = () => (
   <View>
     <Text>
@@ -131,7 +132,7 @@ export default App = () => {
           headerTitle: () => <Nav navigation={navigation} />,
           headerRight: () => (
             <Profile navigation={navigation}
-            // auth={auth}
+            auth={auth}
             />
           ),
         })}
@@ -140,7 +141,6 @@ export default App = () => {
         <Drawer.Screen name="Home" component={HomeStack} />
         <Drawer.Screen name="Music" component={MusicStack} />
         <Drawer.Screen name="Videos" component={VideoScreen} initialParams={{ fullscreen: fullscreen }} />
-        {/* <Drawer.Screen name="Profile" component={ProfileStack} /> */}
       </Drawer.Navigator>
     </NavigationContainer>
   )
