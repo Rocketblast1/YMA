@@ -18,35 +18,37 @@ import VideoScreen from "./screens/VideoScreen";
 import HomeStack from "./stacks/HomeStack";
 import LOGIN_SIGNUP_STACK from "./stacks/ProfileStack";
 import MusicStack from "./stacks/MusicStack";
+import VideoStack from './stacks/VideoStack';
 
-
-
-const R = () => (
-  <View>
-    <Text>
-      Hello 2
-    </Text>
-  </View>
-)
+//Contexts
+import { FullscreenContext } from './contexts/FullscreenContext';
+import useFullscreen from './hooks/useFullscreen';
+import { VideoContext } from './contexts/VideoContext';
+import { useVideo } from './hooks/useVideo';
 
 export default App = () => {
   const { width, height } = useWindowDimensions();
   const Drawer = createDrawerNavigator();
   const [initializing, setInitializing] = useState(true);
   const [user, setUser] = useState();
-  const muicPlayerIsSetup = useRef(false)
-  const [fullscreen, setFullscreen] = useState();
-  const orientation = useDeviceOrientation();
-  const handleFullscreen = async () => {
-    if (orientation == "landscape") {
-      setFullscreen(true)
-      StatusBar.setHidden(true)
-    }
-    if (orientation == "portrait") {
-      setFullscreen(false)
-      StatusBar.setHidden(false)
-    }
-  }
+  const [video, setVideo] = useVideo();
+
+
+  //--------- use fullscreen hook here
+  // const [fullscreen, setFullscreen] = useState();
+  // const orientation = useDeviceOrientation();
+  // const handleFullscreen = async () => {
+  //   if (orientation == "landscape") {
+  //     setFullscreen(true)
+  //     StatusBar.setHidden(true)
+  //   }
+  //   if (orientation == "portrait") {
+  //     setFullscreen(false)
+  //     StatusBar.setHidden(false)
+  //   }
+  // }
+  //--------- use fullscreen hook here
+  const { fullscreen, orientation, handleFullscreen } = useFullscreen()
 
   const isSetup = useRef(false)
   const Player = useContext(TrackContext)
@@ -56,6 +58,7 @@ export default App = () => {
         isSetup.current = true;
         setInitializing(false)
       });
+
     } catch (e) {
       console.log(e)
     }
@@ -100,58 +103,57 @@ export default App = () => {
 
 
   return (
-    <NavigationContainer style={{ flex: 1, height: height, width: width }} >
-      <StatusBar
-        animated={true}
-        backgroundColor={"#53e639"}
-      />
-      <Drawer.Navigator
-        screenOptions={({ navigation }) => ({
-          headerShown: !fullscreen,
-          initialRouteName: "Home",
-          headerTitleAlign: "center",
-          headerStyle: {
-            backgroundColor: "#53e639",
-            height: 55,
-          },
-          drawerStyle: {
-            backgroundColor: "#53e639",
-          },
-          drawerContentOptions: {
-            activeTintColor: "#8eff7a",
-            itemStyle: {
-              marginTop: 10,
-              justifyContent: "center",
-            },
-            labelStyle: {
-              fontSize: 25,
-              color: "white",
-            },
-          },
-          headerLeft: () => <Menu navigation={navigation} />,
-          headerTitle: () => <Nav navigation={navigation} />,
-          headerRight: () => (
-            <Profile navigation={navigation}
-            auth={auth}
+    <FullscreenContext.Provider value={fullscreen}>
+      <VideoContext.Provider value={[video, setVideo]}>
+          <NavigationContainer style={{ flex: 1, height: height, width: width }} >
+            <StatusBar
+              animated={true}
+              backgroundColor={"#53e639"}
             />
-          ),
-        })}
-        headerMode="screen"
-      >
-        <Drawer.Screen name="Home" component={HomeStack} />
-        <Drawer.Screen name="Music" component={MusicStack} />
-        <Drawer.Screen name="Videos" component={VideoScreen} initialParams={{ fullscreen: fullscreen }} />
-      </Drawer.Navigator>
-    </NavigationContainer>
+            <Drawer.Navigator
+              screenOptions={({ navigation }) => ({
+                headerShown: !fullscreen,
+                initialRouteName: "Home",
+                headerTitleAlign: "center",
+                headerStyle: {
+                  backgroundColor: "#53e639",
+                  height: 55,
+                },
+                drawerStyle: {
+                  backgroundColor: "#53e639",
+                },
+                drawerContentOptions: {
+                  activeTintColor: "#8eff7a",
+                  itemStyle: {
+                    marginTop: 10,
+                    justifyContent: "center",
+                  },
+                  labelStyle: {
+                    fontSize: 25,
+                    color: "white",
+                  },
+                },
+                headerLeft: () => <Menu navigation={navigation} />,
+                headerTitle: () => <Nav navigation={navigation} />,
+                headerRight: () => (
+                  <Profile navigation={navigation}
+                    auth={auth}
+                  />
+                ),
+              })}
+              headerMode="screen"
+            >
+              <Drawer.Screen name="Home" component={HomeStack} />
+              <Drawer.Screen name="Music" component={MusicStack} />
+              <Drawer.Screen name="Videos" component={VideoStack} />
+            </Drawer.Navigator>
+          </NavigationContainer>
+      </VideoContext.Provider>
+    </FullscreenContext.Provider>
+
   )
 
 
-  // return (
-  //   <NavigationContainer>
-  //     <Drawer.Navigator>
-  //       <Drawer.Screen name="Home" component={R}/>
-  //     </Drawer.Navigator>
-  //   </NavigationContainer>
-  // )
+
 }
 

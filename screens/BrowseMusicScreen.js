@@ -10,17 +10,17 @@ import {
 import Card from "../components/Card";
 import storage from '@react-native-firebase/storage';
 import firestore from '@react-native-firebase/firestore';
-import { TrackContext } from "../contexts/TrackContext";
-import FoundationIcon from "react-native-vector-icons/Foundation";
-import IonIcon from "react-native-vector-icons/Ionicons";
+import { TrackContext, QueueContext } from "../contexts/TrackContext";
+import useQueue from "../hooks/useQueue";
 
 const iconSize = 30;
 
 
-export default function BrowseScreen({ route }) {
+export default function BrowseMusicScreen({ route }) {
     const Player = useContext(TrackContext)
+
+    const [queue, setQueue, currentTrack, getQueue] = useContext(QueueContext)
     const [initializing, setInitializing] = useState(true)
-    const { updateTrackQueue } = route.params
     const [songs, setSongs] = useState([]);
 
     //Store songs array
@@ -31,11 +31,7 @@ export default function BrowseScreen({ route }) {
             .onSnapshot((querySnapshot) => {
                 try {
                     querySnapshot.forEach(documentSnapshot => {
-                        songs.push({
-                            ...documentSnapshot.data(),
-                            key: documentSnapshot.id,
-                        })
-
+                        setSongs(prev => [...prev, { ...documentSnapshot.data(), key: documentSnapshot.id }])
                     });
                 } catch (e) {
                     console.log(e)
@@ -43,6 +39,7 @@ export default function BrowseScreen({ route }) {
                     setInitializing(false)
                 }
             });
+
         return () => {
             subscriber();
         }
@@ -63,11 +60,15 @@ export default function BrowseScreen({ route }) {
             await storage().ref(artwork).getDownloadURL().then((url) => {
                 song.artwork.uri = url
             })
+
         } catch (e) {
             console.log(e)
-        } finally {
-            await Player.add(song).then(async () => {
-                await updateTrackQueue()
+        }
+        finally {
+            await Player.add(song)
+            await Player.getQueue().then(async (queue) => {
+                setQueue(queue)
+                // console.log("Queue from Browse Screen" + JSON.stringify(queue));
             })
         }
 
@@ -78,21 +79,11 @@ export default function BrowseScreen({ route }) {
         <FlatList
             data={songs}
             renderItem={({ item, index }) => (
-
                 <Card title={item.title} artwork={item.artwork} onPress={async () => {
                     handleAddSong(item.title, item.filename, item.artwork)
                 }} />
             )}
         />
-        // <ScrollView
-        //     style={{}}
-        //     nestedScrollEnabled
-        //     contentContainerStyle={styles.ccs}
-        // >
-        //     {songs.map((item, index) => (
-
-        //     ))}
-        // </ScrollView>
     );
 
 

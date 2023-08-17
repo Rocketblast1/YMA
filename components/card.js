@@ -12,7 +12,7 @@ import {
 import storage from '@react-native-firebase/storage';
 export default function Card({ title, intro, source, artwork, onPress }) {
   const [initializing, setInitializing] = useState(true);
-  const [url, setUrl] = useState({ uri: "" }); // TODO: Change this to the loading asset
+  const [url, setUrl] = useState(require("../assets/YM_Logo-Black.png")); // TODO: Change this to the loading asset
   useEffect(() => {
     if (artwork) {
       let art = { uri: null }
@@ -59,7 +59,7 @@ export default function Card({ title, intro, source, artwork, onPress }) {
         style={{ display: "flex", flex: 1, width: "100%", height: "100%", borderRadius: 10, }}
         resizeMode={"cover"}
       />
-      <Text style={styles.title}> {title} </Text>      
+      <Text style={styles.title}> {title} </Text>
     </TouchableOpacity>
   );
 }
@@ -103,10 +103,10 @@ const styles = StyleSheet.create({
     textAlignVertical: "center",
     width: "100%",
     height: "100%",
-    color: "#67ff4d",
+    color: "white",
     fontSize: 30,
     opacity: 1,
-    fontWeight: "bold",
+    fontWeight: "900",
     zIndex: 10,
   },
   intro: {

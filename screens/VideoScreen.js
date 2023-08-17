@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import {
   StyleSheet,
   View,
+  ScrollView,
   Text,
   FlatList,
   TouchableOpacity,
@@ -24,12 +25,20 @@ import VideoDescription from "../components/VideoDescription";
 import VideoComments from "../components/VideoComments";
 import AddComment from "../components/AddComment";
 import auth from "@react-native-firebase/auth";
+import BrowseVideos from './BrowseVideosScreen';
+import { useVideo } from "../hooks/useVideo";
+import { VideoContext } from "../contexts/VideoContext";
+import VideoCommentsModal from "../components/VideoCommentsModal";
+import { BrowseVideoList } from "../components/BrowseVideoList";
 
-// ------------------------T-------------TO DO---------------------------------------------------:
-// 2) Build video player UI [] (Get time of playback and build seekbar)
+// -------------------------------------TO DO---------------------------------------------------:
+// 2) Build video player UI [] (Get time of playback )
 
 export default VideoScreen = ({ route }) => {
-  const [video, setVideo] = useState(route.params.filename ? { uri: route.params.filename } : require("../assets/Its-A-Show-4.mp4"))
+  // const video = null
+  // const setVideo = null
+  const [video, setVideo] = useContext(VideoContext)
+
   const height = Dimensions.get("screen").height;
   const width = Dimensions.get("screen").width;
   const [paused, setPaused] = useState(false);
@@ -39,6 +48,7 @@ export default VideoScreen = ({ route }) => {
   const [controlsVisible, setControlsVisible] = useState(false)
   const [initializing, setInitializing] = useState(true)
   const [iconSize, setIconSize] = useState(height / 22)
+  const [commentsVisible, setCommentsVisible] = useState(false);
   const orientation = useDeviceOrientation();
   const handleFullscreen = async () => {
     if (orientation == "landscape") {
@@ -53,7 +63,7 @@ export default VideoScreen = ({ route }) => {
     }
   }
   const handleShowControls = () => {
-    clearTimeout(this.timer);
+    if (this.timer) clearTimeout(this.timer)
     setControlsVisible(true)
     this.timer = setTimeout(() => {
       setControlsVisible(false)
@@ -63,11 +73,10 @@ export default VideoScreen = ({ route }) => {
   useEffect(() => {
     LogBox.ignoreLogs(["Animated: `useNativeDriver`"]);
     load();
-    if (route.params.filename) {
-      setVideo({ uri: route.params.filename })
-    }
+    console.log("Video Screen Loaded: " + JSON.stringify(video));
+
     handleFullscreen();
-  }, [orientation, route.params.filename]);
+  }, [orientation, video]);
 
 
   const handlePlay = () => {
@@ -84,26 +93,49 @@ export default VideoScreen = ({ route }) => {
     if (initializing) setInitializing(false);
   }
 
+
+  if (video == null && initializing) {
+    console.log("No Video Found" + video);
+    return (
+      <View style={styles.screenContainer}>
+        <Text> Loading Video</Text>
+      </View>
+    )
+  }
+
+
+  if (video == null && !initializing) {
+    console.log("No Video Found" + video);
+    return (
+      <View style={styles.screenContainer}>
+        <BrowseVideos setVideo={setVideo} />
+      </View>
+    )
+
+  }
+
   return (
     <>
       {initializing ? <></> : <View style={styles.screenContainer}>
         <View
           style={{
-            flex: 1,
+            flex: 2,
             position: fullscreen ? "absolute" : "relative",
-            height: fullscreen ? height : height / 2,
+            // height: height,
+            // minHeight: "20%",
             width: "100%",
-            zIndex: 1000,
+            zIndex: 30,
           }}
         >
           <TouchableOpacity style={{
+            display: "flex",
             flex: 1,
             position: "relative",
             backgroundColor: "green",
             justifyContent: 'center',
           }}
             onPress={handleShowControls} >
-            <Video
+            {video ? <Video
               ref={(ref) => {
                 setRef(ref);
               }}
@@ -124,14 +156,15 @@ export default VideoScreen = ({ route }) => {
               }}
               onBuffer={(bufferObj) => {
                 setPaused(true)
-                console.log(bufferObj);
+                console.log("Video Buffering: " + bufferObj);
               }}
-              source={video}
+              source={video ? video.url : null}
               paused={paused}
               fullscreenOrientation="landscape"
               resizeMode={fullscreen ? "cover" : "contain"}
               style={styles.backgroundVideo}
-            />
+            /> : <Text> No Video Found</Text>}
+
             {controlsVisible ? <View style={styles.invisibleContainer}>
               <View style={styles.videoControls} >
                 <TouchableOpacity style={styles.ivb} onPress={() => {
@@ -156,8 +189,8 @@ export default VideoScreen = ({ route }) => {
               <Slider
                 style={styles.slider}
                 minimumValue={0}
-                maximumValue={vidPlayer.seekableDuration}
-                value={vidPlayer.currentTime}
+                maximumValue={vidPlayer ? vidPlayer.seekableDuration : 0}
+                value={vidPlayer ? vidPlayer.currentTime : 0}
                 onSlidingStart={() => {
                   setPaused(true)
                   clearTimeout(this.timer)
@@ -176,19 +209,41 @@ export default VideoScreen = ({ route }) => {
             </View> : <></>}
           </TouchableOpacity>
         </View>
-        <AddComment title={route.params.title}/>
-        <VideoDescription title={route.params.title} description={route.params.description} />
-        <VideoComments comments={route.params.comments} />
-        <View style={{ flex: 2 }}>
-          {initializing ? <Text>{toString(paused)}</Text> : <></>}
-
-          {/* 
-          <Text> {JSON.stringify(fullscreen)}</Text>
-          <Text> {JSON.stringify(orientation)}</Text>
-          <Text> {JSON.stringify(vidPlayer)}</Text>
-          <Text> {JSON.stringify(route.params)}</Text> 
-          */}
+        <View
+          style={{
+            display: "flex",
+            maxHeight: "60%",
+            // flexDirection: "column",
+          }}
+        >
+          {video ? (
+            <ScrollView style={{ height: "100%", minHeight: 200, backgroundColor: "blue" }}>
+              {/* <VideoCommentsModal visible={commentsVisible} setVisible={setCommentsVisible} comments={video.comments} /> */}
+              <VideoDescription title={video.title} description={video.description} />
+              <VideoCommentsModal visible={commentsVisible} setVisible={setCommentsVisible}   >
+                <AddComment title={video.title} />
+                <VideoComments comments={video.comments} />
+                <Button title="Close Modal" onPress={() => {
+                  setCommentsVisible(false)
+                }} />
+              </VideoCommentsModal>
+              <TouchableOpacity style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: 100,
+                backgroundColor: "red",
+                textAlign: "center",
+              }} onPress={() => {
+                setCommentsVisible(true)
+              }}>
+                <Text style={{ textAlign: "center" }}> {video.comments.length} Comments </Text>
+              </TouchableOpacity>
+              <BrowseVideoList setVideo={setVideo} />
+            </ScrollView>) : <></>
+          }
         </View>
+
       </View>}
     </>
 
@@ -207,7 +262,7 @@ const styles = StyleSheet.create({
     // padding: '5%',
     // marginHorizontal: '5%',
     alignSelf: "center",
-    zIndex: 1001,
+    zIndex: 35,
   },
   invisibleContainer: {
     position: "absolute",
@@ -231,10 +286,11 @@ const styles = StyleSheet.create({
     height: "30%",
     justifyContent: 'space-evenly',
     alignSelf: "center",
-    zIndex: 1001,
+    zIndex: 40,
   },
   backgroundVideo: {
     display: "flex",
     flex: 1,
+    minHeight: "100%",
   },
 });

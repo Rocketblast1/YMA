@@ -1,24 +1,32 @@
 import React, { useEffect, useContext, useState } from "react";
 import { Image, TouchableOpacity, Text, View, FlatList, StyleSheet, Dimensions } from "react-native";
-import { TrackContext } from "../contexts/TrackContext";
+import { TrackContext, QueueContext } from "../contexts/TrackContext";
 import FoundationIcon from "react-native-vector-icons/Foundation";
 import IonIcon from "react-native-vector-icons/Ionicons";
 import { State } from "react-native-track-player";
 import useQueue from "../hooks/useQueue";
 
 const iconSize = 30;
-export default SongLst = ({ songs, update }) => {
-    const Player = useContext(TrackContext)
+export default SongLst = ({ Player }) => {
+    const [queue, setQueue] = useContext(QueueContext);
     useEffect(() => {
-    }, [songs]);
+
+    }, []);
+
+    const handleRemoveAndReset = async (index) => {
+        await Player.remove(index)
+        await Player.getQueue().then(async (queue) => {
+            setQueue(queue)
+        })
+    }
 
     const handleRemoveSongFromQueue = async (index) => {
         if (index == 0 && ((await Player.getQueue()).length == 1)) {
-            await Player.remove(index)
+            // console.log("Current Song Removed, 1 Song In Q:" + JSON.stringify(await Player.getQueue()))
+            handleRemoveAndReset(index)
             Player.pause()
             Player.reset()
-            update()
-            console.log("One Song In Q:" + await Player.getQueue())
+
         } else {
             // If the removed song is the current song and there is more than one song in the queue...
             if (index == await Player.getCurrentTrack() && ((await Player.getQueue()).length > 1)) {
@@ -27,25 +35,22 @@ export default SongLst = ({ songs, update }) => {
                     Player.pause();
                 }
                 await Player.skipToNext().then(async () => {
-                    Player.remove(index);
-                    update()
-                    console.log("Curent Song Removed with more than 1 In Q: " + JSON.stringify(await Player.getQueue()))
+                    handleRemoveAndReset(index)
+                    // console.log("Curent Song Removed" + JSON.stringify(await Player.getQueue()))
                 });
             } else {
-                await Player.remove(index)
-                update()
-                console.log("Curent Song Removed " + await Player.getQueue())
+                handleRemoveAndReset(index)
+                // console.log("Song Removed " + JSON.stringify(await Player.getQueue()))
             }
         }
     }
 
     return (
         <FlatList
-            data={songs}
+            data={queue}
             renderItem={({ item, index }) => (
                 <TouchableOpacity key={index} style={{ margin: 10, }} activeOpacity={0.85} onPress={async () => {
                     Player.skip(index)
-
                 }}>
                     {/* Song Container */}
                     <View style={styles.songContainer}>

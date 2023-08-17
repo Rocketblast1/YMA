@@ -2,39 +2,27 @@ import React, { useState, useEffect, useRef, useContext } from "react";
 import { Button, StyleSheet, View, ImageBackground, Text, } from "react-native";
 import storage from '@react-native-firebase/storage';
 import firestore from '@react-native-firebase/firestore';
-import { TrackContext } from "../contexts/TrackContext";
+import { TrackContext, QueueContext } from "../contexts/TrackContext";
 import useQueue from "../hooks/useQueue";
 import SongLst from "../components/SongLst";
 import PlayerControls from "../components/PlayerControls";
+import { MusicPlayerBackground } from "../components/MusicPlayerBackground";
 
 export default MusicScreen = ({ navigation }) => {
-    const [queuedSongs, updateTrackQueue] = useQueue()
+
     const [initializing, setInitializing] = useState(true)
     const isSetup = useRef(false)
     const Player = useContext(TrackContext)
-    const setUpTrackPlayer = async () => {
-        try {
-            await Player.setupPlayer().then(() => {
-                isSetup.current = true;
-                setInitializing(false)
-            });
-        } catch (e) {
-            console.log(e)
-        }
-    }
+    const [queue, setQueue, currentTrack, getQueue] = useContext(QueueContext)
 
     useEffect(() => {
-        if (!isSetup.current) {
-            setUpTrackPlayer();
-        }
-        setInitializing(false)
         return () => {
             isSetup.current = false
-            Player.destroy()
+            // if (Player != undefined) {
+            //     Player.destroy()
+            // }
         }
-    }, [
-        // currentTrack
-    ])
+    }, [queue])
 
     // if (initializing) {
     //     return (<View style={{ flex: 1, backgroundColor: "red" }}>
@@ -43,26 +31,18 @@ export default MusicScreen = ({ navigation }) => {
 
 
     return (
-        <ImageBackground
-            resizeMode="cover"
-            source={{uri: "https://forms.gle/BY7X15tYrHU3pJWaA"}}
-            style={styles.body}
-            onLayout={() => {
-              
-            }}
-            blurRadius={6}>
-            {/* Queue */}
+        <MusicPlayerBackground queue={queue} currentTrack={currentTrack}>
             <View style={styles.queueContainer}>
-                {queuedSongs ? (<SongLst songs={queuedSongs} update={updateTrackQueue} />) : (<></>)}
+                {queue ? (<SongLst songs={queue} Player={Player} />) : (<Text> No songs</Text>)}
             </View>
-            <Text>
-                {/* {JSON.stringify(currentTrack)} */}
-            </Text>
+            {/* <Text>
+                {JSON.stringify(queue)}
+            </Text> */}
             <PlayerControls Player={Player} />
             <Button title="Browse Music" onPress={() => {
-                navigation.navigate("BrowseScreen", { updateTrackQueue })
+                navigation.navigate("BrowseScreen")
             }} />
-        </ImageBackground>
+        </MusicPlayerBackground>
     )
 };
 

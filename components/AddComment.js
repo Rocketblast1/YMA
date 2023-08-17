@@ -11,9 +11,9 @@ const AddComment = ({ title }) => {
     const [charsLeft, setCharsLeft] = useState()
 
     return (
-        <View>
+        <View style={{ backgroundColor: "white" }}>
             <TextInput
-                style={{ height: 40, borderColor: 'gray', borderWidth: 1 }}
+                style={{ height: 40, borderColor: 'gray', borderWidth: 1, }}
                 onChangeText={text => {
                     setText(text)
                     setCharsLeft(maxText - text.length)
@@ -23,6 +23,9 @@ const AddComment = ({ title }) => {
             <Text> {charsLeft ? charsLeft : maxText} </Text>
             <Button
                 onPress={async () => {
+                    if (text.trim() == "" || text == undefined) {
+                        return console.log("Empty or Undefined Text: " );
+                    }
                     const user = firebase.auth().currentUser
 
                     firestore().collection("Videos").doc(title).get().then((doc) => {
@@ -30,7 +33,7 @@ const AddComment = ({ title }) => {
                             doc.ref.update({
                                 comments: [...doc.data().comments, { username: user.displayName, comment: text, likes: 0 }],
                             }).then(() => {
-                                console.log("Added comment")
+                                console.log("Added comment" + text)
                                 setText("")
                             }).catch((error) => {
                                 console.log(error);
